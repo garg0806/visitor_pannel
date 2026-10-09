@@ -7,11 +7,10 @@ services:
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
-        value: 20
+        value: "20"
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
-        sync: false
         generateValue: true
       - key: FRONTEND_URL
         sync: false
