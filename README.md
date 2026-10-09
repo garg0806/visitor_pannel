@@ -100,6 +100,12 @@ Option A — Blueprint (uses `render.yaml` in repo root):
 3. Deploy. Note your URL: `https://<your-api>.onrender.com`.
 4. Verify: `https://<your-api>.onrender.com/api/health` → `{"success":true,"message":"OK"}`.
 
+The Blueprint uses Render's free web-service plan. Free services spin down after
+15 minutes without traffic and can take about a minute to wake up. Files stored
+on the service filesystem (including uploaded resumes) are ephemeral and may be
+lost when the service restarts or spins down. Use persistent external storage
+and a paid plan for production workloads.
+
 Option B — Manual Web Service:
 1. **New → Web Service** → connect repo.
 2. Settings:
@@ -144,4 +150,3 @@ Option B — Manual Web Service:
 - `/visitor` — Visitor form
 - `/interview` — Interview form
 - `/admin/login`, `/admin`, `/admin/dashboard`, `/admin/visitors`, `/admin/interviewees`
-
