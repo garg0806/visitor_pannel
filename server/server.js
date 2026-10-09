@@ -8,23 +8,32 @@ import interviewRoutes from "./routes/interviewRoute.js";
 import dashboardRoutes from "./routes/dashboardRoute.js";
 import authRoutes from "./routes/authRoute.js";
 import path from "path";
+import fs from "fs";
 
 
 
 dotenv.config();
 
-connectDB();
-
-
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [FRONTEND_URL, "http://localhost:5173"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
+
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 app.use(
   "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
+  express.static(uploadsDir)
 );
 console.log("Visitor Routes Loaded");
 app.use("/api/visitors", visitorRoutes);
@@ -39,9 +48,20 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, message: "OK" });
+});
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server Running On ${PORT}`);
-});
+// Connect DB first, then listen (fails fast on bad MONGODB_URI)
+const start = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server Running On ${PORT}`);
+  });
+};
+
+start();
+
 

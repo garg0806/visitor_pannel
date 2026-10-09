@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 
 import AdminLayout from "@/components/layout/AdminLayout";
 import { AdminContext } from "@/context/AdminContext";
+import { fileUrl } from "@/services/api";
 
 import InterviewModal from "@/components/modals/InterviewModal";
 import EditInterviewModal from "@/components/modals/EditInterviewModal";
@@ -264,7 +265,7 @@ export default function Interviewees() {
                     <span className="text-slate-400 block">Resume</span>
                     {item.resume ? (
                       <a
-                        href={`http://localhost:5000${item.resume}`}
+                        href={fileUrl(item.resume)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
@@ -349,7 +350,7 @@ export default function Interviewees() {
                     <td className="px-4 py-4 whitespace-nowrap">
                       {item.resume ? (
                         <a
-                          href={`http://localhost:5000${item.resume}`}
+                          href={fileUrl(item.resume)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium text-xs transition"
