@@ -1,4 +1,7 @@
+import dotenv from "dotenv";
 import mongoose from "mongoose";
+
+dotenv.config();
 
 const DEFAULT_MONGODB_URI = "mongodb://127.0.0.1:27017/companyportal";
 
@@ -15,7 +18,8 @@ const connectDB = async () => {
     await mongoose.connect(mongoUri);
     console.log("✅ MongoDB Connected");
   } catch (err) {
-    console.error("MongoDB connection failed:", err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("MongoDB connection failed:", message);
     process.exit(1);
   }
 };
