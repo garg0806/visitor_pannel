@@ -1,20 +1,31 @@
+
 import axios from "axios";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000";
+
+const API_ORIGIN = API_BASE_URL.replace(/\/+$/, "");
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: `${API_ORIGIN}/api`,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
-// Strip env base to file path, prefix with API origin
+// Build URLs for uploaded files
 export const fileUrl = (filePath) => {
   if (!filePath) return "";
-  if (/^https?:\/\//i.test(filePath)) return filePath;
-  const base =
-    import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  const origin = base.replace(/\/api\/?$/, "");
-  return `${origin}${filePath.startsWith("/") ? filePath : `/${filePath}`}`;
+
+  // Return absolute URLs unchanged
+  if (/^https?:\/\//i.test(filePath)) {
+    return filePath;
+  }
+
+  // Uploads are served from the backend root, not /api
+  return `${API_ORIGIN}/${filePath.replace(/^\/+/, "")}`;
 };
 
 export default api;
