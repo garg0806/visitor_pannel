@@ -52,7 +52,8 @@ export default function EditVisitorModal({
 
           <input
             name="firstName"
-            value={formData.firstName || ""}
+            {/* value={formData.firstName || ""} */}
+          value={""}
             onChange={handleChange}
             className="border rounded-xl p-3"
             placeholder="First Name"
