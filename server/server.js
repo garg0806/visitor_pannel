@@ -1,7 +1,7 @@
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
 import connectDB from "./config/db.js";
 import visitorRoutes from "./routes/visitorRoute.js";
 import interviewRoutes from "./routes/interviewRoute.js";
@@ -10,58 +10,99 @@ import authRoutes from "./routes/authRoute.js";
 import path from "path";
 import fs from "fs";
 
-
-
 dotenv.config();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+// Allowed frontend origins
+const FRONTEND_URL =
+  process.env.FRONTEND_URL || "http://localhost:5173";
+
+const allowedOrigins = new Set([
+  FRONTEND_URL.replace(/\/$/, ""),
+  "https://visitor-pannel.vercel.app",
+  "http://localhost:5173",
+]);
 
 const app = express();
 
+// CORS configuration
 app.use(
   cors({
-    origin: [FRONTEND_URL, "http://localhost:5173"],
+    origin: (origin, callback) => {
+      // Allow requests without Origin, e.g. server health checks
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const normalizedOrigin = origin.replace(/\/$/, "");
+
+      if (allowedOrigins.has(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
+      console.warn(`CORS blocked origin: ${origin}`);
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// Parse JSON request bodies
 app.use(express.json());
 
+// Uploads directory
 const uploadsDir = path.join(process.cwd(), "uploads");
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-app.use(
-  "/uploads",
-  express.static(uploadsDir)
-);
-console.log("Visitor Routes Loaded");
+
+app.use("/uploads", express.static(uploadsDir));
+
+// API routes
+console.log("Loading API routes...");
+
 app.use("/api/visitors", visitorRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/auth", authRoutes);
 
+console.log("Visitor, Interview, Dashboard and Auth routes loaded");
+
+// Root endpoint
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
-    message: "Company Portal API Running"
+    message: "Company Portal API Running",
   });
 });
 
+// Health-check endpoint
 app.get("/api/health", (req, res) => {
-  res.json({ success: true, message: "OK" });
+  res.status(200).json({
+    success: true,
+    message: "OK",
+  });
 });
 
+// Start server after connecting to MongoDB
 const PORT = process.env.PORT || 5000;
 
-// Connect DB first, then listen (fails fast on bad MONGODB_URI)
 const start = async () => {
-  await connectDB();
-  app.listen(PORT, () => {
-    console.log(`Server Running On ${PORT}`);
-  });
+  try {
+    await connectDB();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Allowed frontend origins: ${[
+        ...allowedOrigins,
+      ].join(", ")}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error.message);
+    process.exit(1);
+  }
 };
 
 start();
-
-
